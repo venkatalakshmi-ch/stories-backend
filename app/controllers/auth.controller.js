@@ -31,6 +31,7 @@ exports.login = async (req, res) => {
         lastName: user.lastName,
         id: user.id,
         token: token,
+        type: user.type,
       };
       res.send(userInfo);
     });
@@ -40,17 +41,17 @@ exports.login = async (req, res) => {
 exports.logout = async (req, res) => {
   let auth = req.get("authorization");
   console.log(auth);
-  if (
-    auth != null &&
-    auth.startsWith("Bearer ") &&
-    (typeof require !== "string" || require === "token")
+ if (
+  auth != null &&
+  auth.startsWith("Bearer ") &&
+  (typeof require !== "string" || require === "token")
   ) {
-    let token = auth.slice(7);
-    let sessionId = await decrypt(token);
+   let token = auth.slice(7);
+   let sessionId = await decrypt(token);
     if (sessionId == null) return;
-    return await Session.destroy({ where: { id: sessionId } }).catch(
-      (error) => {
-        console.log(error);
+   return await Session.destroy({ where: { id: sessionId } }).catch(
+   (error) => {
+ console.log(error);
       }
     );
   }
