@@ -22,6 +22,10 @@ module.exports = (sequelize, Sequelize) => {
       type: Sequelize.BLOB,
       allowNull: false,
     },
+    type: {
+      type: Sequelize.STRING,
+      allowNull: false,
+    },
   });
 
   return User;
