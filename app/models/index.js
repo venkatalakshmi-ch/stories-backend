@@ -64,4 +64,12 @@ db.chat.belongsTo(
 );
 
 
+// sequelize.sync({ force: false }) // Set force to true to drop tables and recreate them
+//   .then(() => {
+//     console.log('Models synchronized successfully.');
+//   })
+//   .catch((error) => {
+//     console.error('Error synchronizing models:', error);
+//   });
+
 module.exports = db;

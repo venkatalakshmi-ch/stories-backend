@@ -10,19 +10,31 @@ exports.create = async (req, res) => {
   if (req.body.firstName === undefined) {
     const error = new Error("First name cannot be empty for user!");
     error.statusCode = 400;
-    throw error;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
   } else if (req.body.lastName === undefined) {
     const error = new Error("Last name cannot be empty for user!");
     error.statusCode = 400;
-    throw error;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
   } else if (req.body.email === undefined) {
     const error = new Error("Email cannot be empty for user!");
     error.statusCode = 400;
-    throw error;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
   } else if (req.body.password === undefined) {
     const error = new Error("Password cannot be empty for user!");
     error.statusCode = 400;
-    throw error;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
   }
 
   // find by email

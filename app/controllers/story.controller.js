@@ -9,7 +9,19 @@ exports.create = async (req, res) => {
   if (!req.body.title) {
     const error = new Error("Title cannot be empty!");
     error.statusCode = 400;
-    throw error;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating story.",
+    });
+  }
+
+  if (!req.body.userId) {
+    const error = new Error("UserId cannot be empty!");
+    error.statusCode = 400;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating story.",
+    });
   }
 
   try {
@@ -94,6 +106,10 @@ exports.update = (req, res) => {
 // Delete a Story with the specified id in the request
 exports.delete = (req, res) => {
   const id = req.params.id;
+
+  Chat.destroy({
+    where: { storyId: id },
+  })
 
   Story.destroy({
     where: { id: id },
