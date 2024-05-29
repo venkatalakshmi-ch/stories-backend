@@ -15,6 +15,7 @@ exports.create = async (req, res) => {
     const newStory = await Story.create({
       title: req.body.title,
       story: req.body.story,
+      userId: req.body.userId,
       isPublished: req.body.isPublished || false
     });
 
