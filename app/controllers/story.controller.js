@@ -1,6 +1,7 @@
 const db = require("../models");
 const Story = db.story;
 const Chat = db.chat;
+const User = db.user;
 
 // Create and Save a new Story
 exports.create = async (req, res) => {
@@ -19,17 +20,9 @@ exports.create = async (req, res) => {
       isPublished: req.body.isPublished || false
     });
 
-    // // Create a Chat for the new story
-    // if (req.body.chat) {
-    //   const newChat = await Chat.create({
-    //     role: req.body.chat.role,
-    //     message: req.body.chat.message,
-    //     storyId: newStory.id // Associate the chat with the story
-    //   });
-    // }
-
     res.send(newStory);
   } catch (err) {
+    console.log(err);
     res.status(500).send({
       message: err.message || "Some error occurred while creating the Story."
     });
@@ -41,7 +34,7 @@ exports.findAll = (req, res) => {
   const id = req.query.id;
   const condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  Story.findAll({ where: condition })
+  Story.findAll({ where: condition, include: { model: User, as: "user", attributes:['firstName', 'lastName'] } })
     .then((data) => {
       res.send(data);
     })
