@@ -55,7 +55,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Story.findByPk(id, { include: ["chats"] }) // Include associated chats
+  Story.findByPk(id) // Include associated chats
     .then((data) => {
       if (data) {
         res.send(data);
