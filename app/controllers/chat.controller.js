@@ -8,7 +8,19 @@ exports.create = async (req, res) => {
     if (!req.body.message) {
         const error = new Error("Message cannot be empty!");
         error.statusCode = 400;
-        throw error;
+        res.status(400).send({
+            message:
+              error.message || "Some error occurred while sending message.",
+          });
+    }
+
+    if(!req.body.storyId) {
+        const error = new Error("StoryId cannot be empty!");
+        error.statusCode = 400;
+        res.status(400).send({
+            message:
+              error.message || "Some error occurred while sending message.",
+          });
     }
 
     try {
