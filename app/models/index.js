@@ -19,6 +19,7 @@ db.session = require("./session.model.js")(sequelize, Sequelize);
 db.user = require("./user.model.js")(sequelize, Sequelize);
 db.story = require("./story.model.js")(sequelize, Sequelize);
 db.chat = require("./chat.model.js")(sequelize, Sequelize);
+db.language = require("./language.model.js")(sequelize, Sequelize);
 
 // foreign key for session
 db.user.hasMany(

@@ -31,6 +31,7 @@ require("./app/routes/auth.routes.js")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/story.routes")(app);
 require("./app/routes/chat.routes")(app);
+require("./app/routes/language.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3200;
