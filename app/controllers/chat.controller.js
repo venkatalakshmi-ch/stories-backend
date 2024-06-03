@@ -40,6 +40,7 @@ exports.create = async (req, res) => {
                 'Content-Type': 'application/json'
             }
         });
+
         console.log(aiResponse.data);
 
         // Get the AI's response message
