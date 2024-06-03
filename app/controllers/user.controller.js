@@ -110,7 +110,7 @@ exports.findAll = (req, res) => {
   const id = req.query.id;
   var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  User.findAll({ where: condition })
+  User.findAll({ where: condition, attributes: { exclude: ["password", "salt"] } })
     .then((data) => {
       res.send(data);
     })
@@ -125,7 +125,7 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  User.findByPk(id)
+  User.findByPk(id, { attributes: { exclude: ["password", "salt"] }})
     .then((data) => {
       if (data) {
         res.send(data);
@@ -172,7 +172,14 @@ exports.findByEmail = (req, res) => {
 exports.update = (req, res) => {
   const id = req.params.id;
 
-  User.update(req.body, {
+  const user = {
+    id: req.body.id,
+    firstName: req.body.firstName,
+    lastName: req.body.lastName,
+    email: req.body.email,
+  };
+
+  User.update(user, {
     where: { id: id },
   })
     .then((number) => {
