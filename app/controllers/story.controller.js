@@ -3,6 +3,9 @@ const Story = db.story;
 const Chat = db.chat;
 const User = db.user;
 const FavoriteStory = db.favoriteStory;
+const Language = db.language;
+const Genre = db.genre;
+const Country = db.country;
 
 // Create and Save a new Story
 exports.create = async (req, res) => {
@@ -30,7 +33,10 @@ exports.create = async (req, res) => {
       title: req.body.title,
       story: req.body.story,
       userId: req.body.userId,
-      isPublished: req.body.isPublished || false
+      isPublished: req.body.isPublished || false,
+      languageId: req.body.languageId,
+      genreId: req.body.genreId,
+      countryId: req.body.countryId,
     });
 
     res.send(newStory);
@@ -47,7 +53,13 @@ exports.findAll = (req, res) => {
   const id = req.query.id;
   const condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  Story.findAll({ where: condition, include: { model: User, as: "user", attributes:['firstName', 'lastName'] } })
+  Story.findAll({ where: condition, 
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ] })
     .then((data) => {
       res.send(data);
     })
@@ -62,7 +74,14 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Story.findByPk(id,{include: { model: User, as: "user", attributes:['firstName', 'lastName'] }}) // Include associated chats
+  Story.findByPk(id,{include: 
+    [
+      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ]
+  }) // Include associated chats
     .then((data) => {
       if (data) {
         res.send(data);
