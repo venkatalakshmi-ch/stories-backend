@@ -70,9 +70,6 @@ db.chat.belongsTo(
 
 
 // foreign key for user and stories as favorite stories
-
-
-// foreign key for user and stories as favorite stories
 db.user.belongsToMany(db.story, {
   through: db.favoriteStory,
   as: "favoriteStories",
@@ -87,6 +84,51 @@ db.story.belongsToMany(db.user, {
   otherKey: "userId",
   onDelete: "CASCADE",
 });
+
+
+// foreign key for story and language
+
+db.story.belongsTo(
+  db.language,
+  { as: "language" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.language.hasMany(
+  db.story,
+  { as: "story" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+// foreign key for story and genre
+
+db.story.belongsTo(
+  db.genre,
+  { as: "genre" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.genre.hasMany(
+  db.story,
+  { as: "story" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+
+
+// foreign key for story and country
+
+db.story.belongsTo(
+  db.country,
+  { as: "country" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.country.hasMany(
+  db.story,
+  { as: "story" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
 
 
 module.exports = db;
