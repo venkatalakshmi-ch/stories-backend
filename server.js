@@ -33,6 +33,7 @@ require("./app/routes/story.routes")(app);
 require("./app/routes/chat.routes")(app);
 require("./app/routes/language.routes")(app);
 require("./app/routes/countries.routes")(app);
+require("./app/routes/genre.routes")(app);
 
 // set port, listen for requests
 const PORT = process.env.PORT || 3200;
