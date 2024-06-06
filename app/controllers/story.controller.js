@@ -2,6 +2,7 @@ const db = require("../models");
 const Story = db.story;
 const Chat = db.chat;
 const User = db.user;
+const FavoriteStory = db.favoriteStory;
 
 // Create and Save a new Story
 exports.create = async (req, res) => {
@@ -147,3 +148,84 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+
+// Add a story to favorite for a user
+exports.addFavorite = async (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  try {
+    const newFavoriteStory = await FavoriteStory.create({
+      storyId: storyId,
+      userId: userId,
+    });
+
+    res.send(newFavoriteStory);
+    
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      message: err.message || "Some error occurred while adding story to favorite for User.",
+    });
+  }
+};
+
+
+// Remove a story from favorite for a user
+
+exports.removeFavorite = (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  FavoriteStory.destroy({
+    where: { storyId: storyId, userId: userId },
+  })
+    .then((number) => {
+      if (number == 1) {
+        res.send({
+          message: "Story was removed from favorite successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot remove Story from favorite with storyId = ${storyId} and userId
+          = ${userId}. Maybe Story was not found!`,
+        });
+      }
+    }
+    )
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Could not remove Story from favorite with storyId = " + story
+      });
+    }
+    );
+}
+
+
+// Check if a story is favorite for a user
+
+exports.isFavorite = (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  FavoriteStory.findOne({
+    where: { storyId: storyId, userId: userId },
+  })
+    .then((data) => {
+      if(data){
+        res.send({isFavorite: true});
+      }else{
+        res.send({isFavorite: false});
+      }
+    }
+    )
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error checking if Story is favorite for User.",
+      });
+    }
+    );
+}
+

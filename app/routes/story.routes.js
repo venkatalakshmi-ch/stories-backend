@@ -21,5 +21,15 @@ module.exports = (app) => {
   // Delete all Story
   router.delete("/stories/", [authenticateRoute], Story.deleteAll);
 
+  // Check if a story is favorite for a user
+  router.get("/stories/isFavorite/:storyId/:userId", [authenticateRoute], Story.isFavorite);
+  
+
+  // add story to favorite for a user
+  router.post("/stories/addFavorite/:storyId/:userId", [authenticateRoute], Story.addFavorite);
+
+  // remove story from favorite for a user
+  router.delete("/stories/removeFavorite/:storyId/:userId", [authenticateRoute], Story.removeFavorite);
+
   app.use("/storiesapi", router);
 };
