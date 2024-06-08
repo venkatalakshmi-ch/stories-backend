@@ -2,6 +2,11 @@ const db = require("../models");
 const Story = db.story;
 const Chat = db.chat;
 const User = db.user;
+const FavoriteStory = db.favoriteStory;
+const Language = db.language;
+const Genre = db.genre;
+const Country = db.country;
+const Feedback = db.feedback;
 
 // Create and Save a new Story
 exports.create = async (req, res) => {
@@ -29,7 +34,10 @@ exports.create = async (req, res) => {
       title: req.body.title,
       story: req.body.story,
       userId: req.body.userId,
-      isPublished: req.body.isPublished || false
+      isPublished: req.body.isPublished || false,
+      languageId: req.body.languageId,
+      genreId: req.body.genreId,
+      countryId: req.body.countryId,
     });
 
     res.send(newStory);
@@ -46,7 +54,13 @@ exports.findAll = (req, res) => {
   const id = req.query.id;
   const condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  Story.findAll({ where: condition, include: { model: User, as: "user", attributes:['firstName', 'lastName'] } })
+  Story.findAll({ where: condition, 
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ] })
     .then((data) => {
       res.send(data);
     })
@@ -61,7 +75,14 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Story.findByPk(id) // Include associated chats
+  Story.findByPk(id,{include: 
+    [
+      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ]
+  }) // Include associated chats
     .then((data) => {
       if (data) {
         res.send(data);
@@ -147,3 +168,187 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+
+// Add a story to favorite for a user
+exports.addFavorite = async (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  try {
+    const newFavoriteStory = await FavoriteStory.create({
+      storyId: storyId,
+      userId: userId,
+    });
+
+    res.send(newFavoriteStory);
+    
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      message: err.message || "Some error occurred while adding story to favorite for User.",
+    });
+  }
+};
+
+
+// Remove a story from favorite for a user
+
+exports.removeFavorite = (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  FavoriteStory.destroy({
+    where: { storyId: storyId, userId: userId },
+  })
+    .then((number) => {
+      if (number == 1) {
+        res.send({
+          message: "Story was removed from favorite successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot remove Story from favorite with storyId = ${storyId} and userId
+          = ${userId}. Maybe Story was not found!`,
+        });
+      }
+    }
+    )
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Could not remove Story from favorite with storyId = " + story
+      });
+    }
+    );
+}
+
+
+// Check if a story is favorite for a user
+
+exports.isFavorite = (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  FavoriteStory.findOne({
+    where: { storyId: storyId, userId: userId },
+  })
+    .then((data) => {
+      if(data){
+        res.send({isFavorite: true});
+      }else{
+        res.send({isFavorite: false});
+      }
+    }
+    )
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error checking if Story is favorite for User.",
+      });
+    }
+    );
+}
+
+
+// Add feedback to a story by a user
+
+exports.addFeedback = async (req, res) => {
+  const storyId = req.params.storyId;
+  const userId = req.params.userId;
+
+  try {
+    const newFeedback = await Feedback.create({
+      message: req.body.message,
+      storyId: storyId,
+      userId: userId,
+    });
+
+    res.send(newFeedback);
+    
+  } catch (err) {
+    console.log(err);
+
+    res.status(500).send({
+      message: err.message || "Some error occurred while adding feedback to story for User.",
+    });
+  }
+}
+
+
+// Remove feedback from a story by a user
+
+exports.removeFeedback = (req, res) => {
+ const feedBackId = req.params.feedBackId;
+  
+    Feedback.destroy({
+      where: { id: feedBackId },
+    })
+      .then((number) => {
+        if (number == 1) {
+          res.send({
+            message: "Feedback was removed successfully!",
+          });
+        } else {
+          res.send({
+            message: `Cannot remove Feedback with id = ${feedBackId}. Maybe Feedback was not found!`,
+          });
+        }
+      }
+      )
+      .catch((err) => {
+        res.status(500).send({
+          message: err.message || "Could not remove Feedback with id = " + feedBackId
+        });
+      }
+      );
+}
+
+
+// Retrieve all feedbacks for a story
+
+exports.findAllFeedbacks = (req, res) => {
+
+  const storyId = req.params.storyId;
+
+  Feedback.findAll({ where: { storyId: storyId }, 
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName', 'id'] }
+    ] })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving feedbacks.",
+      });
+    });
+}
+
+
+// Edit feedback for a story
+
+exports.editFeedback = (req, res) => {
+  const feedBackId = req.params.feedBackId;
+
+  Feedback.update(req.body, {
+    where: { id: feedBackId },
+  })
+    .then((number) => {
+      if (number == 1) {
+        res.send({
+          message: "Feedback was updated successfully.",
+        });
+      } else {
+        res.send({
+          message: `Cannot update Feedback with id = ${feedBackId}. Maybe Feedback was not found or req.body is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error updating Feedback with id = " + feedBackId,
+      });
+    });
+}
+
+
