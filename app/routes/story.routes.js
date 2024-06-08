@@ -9,6 +9,9 @@ module.exports = (app) => {
   // Retrieve all stories
   router.get("/stories/", Story.findAll);
 
+  // Retrieve all published stories
+  router.get("/stories/published", Story.findAllPublished);
+
   // Retrieve a single Story with id
   router.get("/stories/:id", Story.findOne);
 
@@ -20,6 +23,15 @@ module.exports = (app) => {
 
   // Delete all Story
   router.delete("/stories/", [authenticateRoute], Story.deleteAll);
+
+  // Retrieve all by a user
+  router.get("/stories/user/:userId", Story.findAllByUser);
+
+  // Retrieve all published by a user
+  router.get("/stories/published/:userId", Story.findAllPublishedByUser);
+
+  // Retrieve all favorite stories for a user
+  router.get("/stories/favorite/:userId", Story.findAllFavoriteByUser);
 
   // Check if a story is favorite for a user
   router.get("/stories/isFavorite/:storyId/:userId", [authenticateRoute], Story.isFavorite);
