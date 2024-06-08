@@ -15,6 +15,9 @@ module.exports = (app) => {
   // Update a User with id
   router.put("/users/:id", [authenticateRoute], User.update);
 
+  // Change Password
+  router.put("/users/:id/change-password", [authenticateRoute], User.changePassword);
+
   // Delete a User with id
   router.delete("/users/:id", [authenticateRoute], User.delete);
 
