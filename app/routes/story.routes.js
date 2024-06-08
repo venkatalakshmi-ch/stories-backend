@@ -31,5 +31,18 @@ module.exports = (app) => {
   // remove story from favorite for a user
   router.delete("/stories/removeFavorite/:storyId/:userId", [authenticateRoute], Story.removeFavorite);
 
+
+  // add feedback to a story by a user
+  router.post("/stories/addFeedback/:storyId/:userId", [authenticateRoute], Story.addFeedback);
+
+  // remove feedback from a story by a user
+  router.delete("/stories/removeFeedback/:feedBackId", [authenticateRoute], Story.removeFeedback);
+
+  // Retrieve all feedbacks for a story
+  router.get("/stories/feedbacks/:storyId", Story.findAllFeedbacks);
+
+  // Edit feedback for a story
+  router.put("/stories/editFeedback/:feedBackId", [authenticateRoute], Story.editFeedback);
+
   app.use("/storiesapi", router);
 };

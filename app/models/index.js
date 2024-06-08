@@ -23,6 +23,7 @@ db.language = require("./language.model.js")(sequelize, Sequelize);
 db.genre = require("./genre.model.js")(sequelize, Sequelize);
 db.country = require("./countries.model.js")(sequelize, Sequelize);
 db.favoriteStory = require("./favorite.model.js")(sequelize, Sequelize);
+db.feedback = require("./feedback.model.js")(sequelize, Sequelize);
 
 
 // foreign key for session
@@ -129,6 +130,38 @@ db.country.hasMany(
   { as: "story" },
   { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
 );
+
+
+// foreign key for feedback and user
+
+db.feedback.belongsTo(
+  db.user,
+  { as: "user" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.user.hasMany(
+  db.feedback,
+  { as: "feedback" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+// foreign key for feedback and story
+
+db.feedback.belongsTo(
+  db.story,
+  { as: "story" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.story.hasMany(
+  db.feedback,
+  { as: "feedback" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+
+
 
 
 module.exports = db;
