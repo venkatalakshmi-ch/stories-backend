@@ -241,3 +241,47 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+
+// Change a User's password
+
+exports.changePassword = async (req, res) => {
+  const id = req.params.id;
+
+  if (req.body.password === undefined) {
+    const error = new Error("Password cannot be empty for user!");
+    error.statusCode = 400;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
+  }
+
+  let salt = await getSalt();
+  let hash = await hashPassword(req.body.password, salt);
+
+  const user = {
+    password: hash,
+    salt: salt,
+  };
+
+  User.update(user, {
+    where: { id: id },
+  })
+    .then((number) => {
+      if (number == 1) {
+        res.send({
+          message: "User's password was updated successfully.",
+        });
+      } else {
+        res.send({
+          message: `Cannot update User's password with id = ${id}. Maybe User was not found or req.body is empty!`,
+        });
+      }
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Error updating User's password with id =" + id,
+      });
+    });
+}
