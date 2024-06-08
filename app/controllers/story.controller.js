@@ -49,6 +49,26 @@ exports.create = async (req, res) => {
   }
 };
 
+
+// Retrieve all Stories published in the database.
+exports.findAllPublished = (req, res) => {
+  Story.findAll({ where: { isPublished: true },
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ] })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+};
+
 // Retrieve all Stories from the database.
 exports.findAll = (req, res) => {
   const id = req.query.id;
@@ -56,7 +76,7 @@ exports.findAll = (req, res) => {
 
   Story.findAll({ where: condition, 
     include: [
-      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
       { model: Language, as: "language" },
       { model: Genre, as: "genre" },
       { model: Country, as: "country"}
@@ -77,7 +97,7 @@ exports.findOne = (req, res) => {
 
   Story.findByPk(id,{include: 
     [
-      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
       { model: Language, as: "language" },
       { model: Genre, as: "genre" },
       { model: Country, as: "country"}
@@ -168,6 +188,82 @@ exports.deleteAll = (req, res) => {
       });
     });
 };
+
+
+// Retrieve all Stories published by a user
+exports.findAllPublishedByUser = (req, res) => {
+  const userId = req.params.userId;
+
+  Story.findAll({ where: { userId: userId, isPublished: true },
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ] })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+}
+
+// Retrieve all Stories by a user
+exports.findAllByUser = (req, res) => {
+  const userId = req.params.userId;
+
+  Story.findAll({ where: { userId: userId },
+    include: [
+      { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country"}
+    ] })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+}
+
+// Retrieve all favorite stories for a user
+exports.findAllFavoriteByUser = (req, res) => {
+
+  const userId = req.params.userId;
+
+  FavoriteStory.findAll({ where: { userId: userId }})
+    .then((data) => {
+      // Get all storyIds
+      const storyIds = data.map((favorite) => favorite.storyId);
+      Story.findAll({ where: { id: storyIds },
+        include: [
+          { model: User, as: "user", attributes:['firstName', 'lastName','id'] },
+          { model: Language, as: "language" },
+          { model: Genre, as: "genre" },
+          { model: Country, as: "country"}
+        ] })
+        .then((data) => {
+          res.send(data);
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message: err.message || "Some error occurred while retrieving favorite stories.",
+          });
+        });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving favorite stories.",
+      });
+    });
+
+}
 
 
 // Add a story to favorite for a user
