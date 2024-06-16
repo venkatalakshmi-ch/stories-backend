@@ -24,6 +24,7 @@ db.genre = require("./genre.model.js")(sequelize, Sequelize);
 db.country = require("./countries.model.js")(sequelize, Sequelize);
 db.favoriteStory = require("./favorite.model.js")(sequelize, Sequelize);
 db.feedback = require("./feedback.model.js")(sequelize, Sequelize);
+db.ageGroup = require("./ageGroup.model.js")(sequelize, Sequelize);
 
 
 // foreign key for session
@@ -115,7 +116,19 @@ db.genre.hasMany(
   { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
 );
 
+// foreign key for story and ageGroup
 
+db.story.belongsTo(
+  db.ageGroup,
+  { as: "ageGroup" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+
+db.ageGroup.hasMany(
+  db.story,
+  { as: "story" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
 
 // foreign key for story and country
 
