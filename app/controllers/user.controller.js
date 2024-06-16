@@ -257,15 +257,39 @@ exports.changePassword = async (req, res) => {
     });
   }
 
-  let salt = await getSalt();
-  let hash = await hashPassword(req.body.password, salt);
+  if (req.body.oldPassword === undefined) {
+    const error = new Error("Old Password cannot be empty for user!");
+    error.statusCode = 400;
+    res.status(400).send({
+      message:
+        error.message || "Some error occurred while creating user.",
+    });
+  }
 
-  const user = {
+  let user = await User.findByPk(id);
+
+  let oldPassword = req.body.oldPassword;
+  let salt = user.salt;
+  let hash = await hashPassword(oldPassword, salt);
+  console.log(hash);
+  console.log(user.password);
+
+  if (Buffer.compare(user.password, hash) !== 0) {
+    res.status(401).send({
+      message: "Old password is incorrect.",
+    });
+    return;
+  }
+
+  salt = await getSalt();
+  hash = await hashPassword(req.body.password, salt);
+
+  const updatedUser = {
     password: hash,
     salt: salt,
   };
 
-  User.update(user, {
+  User.update(updatedUser, {
     where: { id: id },
   })
     .then((number) => {
