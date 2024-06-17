@@ -7,6 +7,7 @@ const Language = db.language;
 const Genre = db.genre;
 const Country = db.country;
 const Feedback = db.feedback;
+const Agegroup = db.ageGroup;
 
 // Create and Save a new Story
 exports.create = async (req, res) => {
@@ -38,6 +39,7 @@ exports.create = async (req, res) => {
       languageId: req.body.languageId,
       genreId: req.body.genreId,
       countryId: req.body.countryId,
+      ageGroupId: req.body.ageGroupId
     });
 
     res.send(newStory);
@@ -49,18 +51,44 @@ exports.create = async (req, res) => {
   }
 };
 
+
+// Retrieve all Stories published in the database.
+exports.findAllPublished = (req, res) => {
+  Story.findAll({
+    where: { isPublished: true },
+    include: [
+      { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country" },
+      { model: Agegroup, as: "ageGroup" }
+    ]
+  })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+};
+
 // Retrieve all Stories from the database.
 exports.findAll = (req, res) => {
   const id = req.query.id;
   const condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
 
-  Story.findAll({ where: condition, 
+  Story.findAll({
+    where: condition,
     include: [
-      { model: User, as: "user", attributes:['firstName', 'lastName'] },
+      { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
       { model: Language, as: "language" },
       { model: Genre, as: "genre" },
-      { model: Country, as: "country"}
-    ] })
+      { model: Country, as: "country" },
+      { model: Agegroup, as: "ageGroup" }
+    ]
+  })
     .then((data) => {
       res.send(data);
     })
@@ -75,13 +103,15 @@ exports.findAll = (req, res) => {
 exports.findOne = (req, res) => {
   const id = req.params.id;
 
-  Story.findByPk(id,{include: 
-    [
-      { model: User, as: "user", attributes:['firstName', 'lastName'] },
-      { model: Language, as: "language" },
-      { model: Genre, as: "genre" },
-      { model: Country, as: "country"}
-    ]
+  Story.findByPk(id, {
+    include:
+      [
+        { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
+        { model: Language, as: "language" },
+        { model: Genre, as: "genre" },
+        { model: Country, as: "country" },
+        { model: Agegroup, as: "ageGroup" }
+      ]
   }) // Include associated chats
     .then((data) => {
       if (data) {
@@ -170,6 +200,91 @@ exports.deleteAll = (req, res) => {
 };
 
 
+// Retrieve all Stories published by a user
+exports.findAllPublishedByUser = (req, res) => {
+  const userId = req.params.userId;
+
+  Story.findAll({
+    where: { userId: userId, isPublished: true },
+    include: [
+      { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country" },
+      { model: Agegroup, as: "ageGroup" }
+    ]
+  })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+}
+
+// Retrieve all Stories by a user
+exports.findAllByUser = (req, res) => {
+  const userId = req.params.userId;
+
+  Story.findAll({
+    where: { userId: userId },
+    include: [
+      { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
+      { model: Language, as: "language" },
+      { model: Genre, as: "genre" },
+      { model: Country, as: "country" },
+      { model: Agegroup, as: "ageGroup" }
+    ]
+  })
+    .then((data) => {
+      res.send(data);
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving stories.",
+      });
+    });
+}
+
+// Retrieve all favorite stories for a user
+exports.findAllFavoriteByUser = (req, res) => {
+
+  const userId = req.params.userId;
+
+  FavoriteStory.findAll({ where: { userId: userId } })
+    .then((data) => {
+      // Get all storyIds
+      const storyIds = data.map((favorite) => favorite.storyId);
+      Story.findAll({
+        where: { id: storyIds },
+        include: [
+          { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] },
+          { model: Language, as: "language" },
+          { model: Genre, as: "genre" },
+          { model: Country, as: "country" },
+          { model: Agegroup, as: "ageGroup" }
+        ]
+      })
+        .then((data) => {
+          res.send(data);
+        })
+        .catch((err) => {
+          res.status(500).send({
+            message: err.message || "Some error occurred while retrieving favorite stories.",
+          });
+        });
+    })
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Some error occurred while retrieving favorite stories.",
+      });
+    });
+
+}
+
+
 // Add a story to favorite for a user
 exports.addFavorite = async (req, res) => {
   const storyId = req.params.storyId;
@@ -182,7 +297,7 @@ exports.addFavorite = async (req, res) => {
     });
 
     res.send(newFavoriteStory);
-    
+
   } catch (err) {
     console.log(err);
 
@@ -234,10 +349,10 @@ exports.isFavorite = (req, res) => {
     where: { storyId: storyId, userId: userId },
   })
     .then((data) => {
-      if(data){
-        res.send({isFavorite: true});
-      }else{
-        res.send({isFavorite: false});
+      if (data) {
+        res.send({ isFavorite: true });
+      } else {
+        res.send({ isFavorite: false });
       }
     }
     )
@@ -264,7 +379,7 @@ exports.addFeedback = async (req, res) => {
     });
 
     res.send(newFeedback);
-    
+
   } catch (err) {
     console.log(err);
 
@@ -278,29 +393,29 @@ exports.addFeedback = async (req, res) => {
 // Remove feedback from a story by a user
 
 exports.removeFeedback = (req, res) => {
- const feedBackId = req.params.feedBackId;
-  
-    Feedback.destroy({
-      where: { id: feedBackId },
-    })
-      .then((number) => {
-        if (number == 1) {
-          res.send({
-            message: "Feedback was removed successfully!",
-          });
-        } else {
-          res.send({
-            message: `Cannot remove Feedback with id = ${feedBackId}. Maybe Feedback was not found!`,
-          });
-        }
-      }
-      )
-      .catch((err) => {
-        res.status(500).send({
-          message: err.message || "Could not remove Feedback with id = " + feedBackId
+  const feedBackId = req.params.feedBackId;
+
+  Feedback.destroy({
+    where: { id: feedBackId },
+  })
+    .then((number) => {
+      if (number == 1) {
+        res.send({
+          message: "Feedback was removed successfully!",
+        });
+      } else {
+        res.send({
+          message: `Cannot remove Feedback with id = ${feedBackId}. Maybe Feedback was not found!`,
         });
       }
-      );
+    }
+    )
+    .catch((err) => {
+      res.status(500).send({
+        message: err.message || "Could not remove Feedback with id = " + feedBackId
+      });
+    }
+    );
 }
 
 
@@ -310,10 +425,12 @@ exports.findAllFeedbacks = (req, res) => {
 
   const storyId = req.params.storyId;
 
-  Feedback.findAll({ where: { storyId: storyId }, 
+  Feedback.findAll({
+    where: { storyId: storyId },
     include: [
-      { model: User, as: "user", attributes:['firstName', 'lastName', 'id'] }
-    ] })
+      { model: User, as: "user", attributes: ['firstName', 'lastName', 'id'] }
+    ]
+  })
     .then((data) => {
       res.send(data);
     })
